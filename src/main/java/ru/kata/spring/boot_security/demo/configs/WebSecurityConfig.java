@@ -2,6 +2,7 @@ package ru.kata.spring.boot_security.demo.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,7 +20,7 @@ public class WebSecurityConfig {
     private final SuccessUserHandler successUserHandler;
     private final UserDetailsService detailsService;
 
-    public WebSecurityConfig(SuccessUserHandler successUserHandler, UserDetailsService detailsService) {
+    public WebSecurityConfig(SuccessUserHandler successUserHandler, @Lazy UserDetailsService detailsService) {
         this.successUserHandler = successUserHandler;
         this.detailsService = detailsService;
     }
@@ -28,10 +29,12 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
         return security
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(aut -> aut.requestMatchers("/index", "/login").permitAll()
+                .authorizeHttpRequests(aut -> aut
+                        .requestMatchers("/index", "/login").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                )
                 .formLogin(formLogin -> formLogin.successHandler(successUserHandler).permitAll())
                 .logout(LogoutConfigurer::permitAll)
                 .build();
