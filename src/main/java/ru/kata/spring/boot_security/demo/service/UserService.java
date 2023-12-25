@@ -28,6 +28,7 @@ public class UserService implements UserDetailsService {
 
 
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user_from_DB = repository.getUserByUsername(username).get();
         return new org.springframework.security.core.userdetails.User(
@@ -72,7 +73,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public boolean deleteUserById(Long id) {
-        if (repository.findById(id).isEmpty()) {
+        if (repository.findById(id).isPresent()) {
             repository.deleteById(id);
             return true;
         }

@@ -2,6 +2,7 @@ package ru.kata.spring.boot_security.demo.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
@@ -18,13 +19,13 @@ public class AdminRestController {
     private final UserService userService;
     private final RoleService roleService;
 
-    public AdminRestController(UserService userService, RoleService roleService) {
+    public AdminRestController(UserService userService, RoleService roleService, PasswordEncoder encoder) {
         this.userService = userService;
         this.roleService = roleService;
     }
 
     @GetMapping("showAccount")
-    public ResponseEntity<User> showInfoUSer(Principal principal) {
+    public ResponseEntity<User> showInfoUser(Principal principal) {
         return ResponseEntity.ok(userService.getUserByUsername(principal.getName()));
     }
 
