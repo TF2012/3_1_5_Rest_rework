@@ -53,7 +53,7 @@ public class UserService implements UserDetailsService {
 
     public User getUserById(Long id) {
         if (repository.findById(id).isEmpty()) {
-            return new UsernameNotFoundException("not found user id");
+            throw new UsernameNotFoundException("not found user id");
         }
         return repository.findById(id).get();
     }

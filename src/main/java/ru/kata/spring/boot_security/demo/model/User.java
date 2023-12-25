@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -26,11 +23,10 @@ public class User implements UserDetails {
     private String lastName;
     @Column(name = "email", unique = true)
     private String email;
-
     @ManyToMany(cascade = CascadeType.REFRESH)
     @JoinTable(name = "users_roles",
-    joinColumns = @JoinColumn(name = "user_id"),
-    inverseJoinColumns = @JoinColumn(name = "role_id"))
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles = new ArrayList<>();
 
     public User() {}
@@ -58,7 +54,7 @@ public class User implements UserDetails {
         this.username = username;
     }
 
-    public void getPassword() { return password; }
+    public String getPassword() { return password; }
 
     public void setPassword(String password) {
         this.password = password;
