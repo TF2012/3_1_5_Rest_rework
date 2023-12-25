@@ -82,13 +82,8 @@
 			<artifactId>jquery</artifactId>
 			<version>3.7.1</version>
 		</dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>9.0.73</version>
-        </dependency>
 
-    </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>
