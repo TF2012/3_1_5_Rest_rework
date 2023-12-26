@@ -9,8 +9,6 @@ import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
-import java.security.Principal;
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -24,61 +22,49 @@ public class AdminRestController {
         this.roleService = roleService;
     }
 
-    @GetMapping("showAccount")
-    public ResponseEntity<User> showInfoUser(Principal principal) {
-        return ResponseEntity.ok(userService.getUserByUsername(principal.getName()));
+    @GetMapping("/getUsers")
+    public ResponseEntity<List<User>> getUsers() {
+        return new ResponseEntity<>(userService.getUsers(), HttpStatus.OK);
     }
 
-    @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
+    @GetMapping("/getRoles")
+    public ResponseEntity<List<Role>> getRoles() {
+        return new ResponseEntity<>(roleService.getRoles(), HttpStatus.OK);
     }
 
-    @GetMapping("/roles")
-    public ResponseEntity<Collection<Role>> getAllRoles() {
-        return new ResponseEntity<>(roleService.findAll(), HttpStatus.OK);
-    }
-
-    @GetMapping("/roles/{id}")
-    public ResponseEntity<Collection<Role>> getRole(@PathVariable("id") Long id) {
-        User user = userService.getUserById(id);
-        if (user == null) {
+    @GetMapping("/getUser")
+    public ResponseEntity<User> getUser(@RequestParam("id") Long id) {
+        if (id == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(user.getRoles(), HttpStatus.OK);
-    }
-
-    @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
-        User user = userService.getUserById(id);
+        User user = userService.getById(id).orElse(null);
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @GetMapping("/users")
-    public ResponseEntity<User> addNewUser(@RequestBody User user) {
+    @PostMapping("/create")
+    public ResponseEntity<Void> createUser(@RequestBody User user) {
         userService.addUser(user);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @GetMapping("/users/{id}")
-    public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable("id") Long id) {
-        if (userService.getUserById(id) == null) {
+    @PostMapping(value = "/update")
+    public ResponseEntity<Void> updateUser(@RequestBody User user, @RequestParam("id") Long id) {
+        if (id == null || userService.getById(id).isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        userService.editUser(user);
-        return new ResponseEntity<>(user, HttpStatus.OK);
-    }
-
-    @DeleteMapping("/users/{id}")
-    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") Long id) {
-        if (userService.getUserById(id) == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        userService.deleteUserById(id);
+        userService.updateUser(id, user);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PostMapping(value = "/delete")
+    public ResponseEntity<Void> deleteUser(@RequestParam("id") Long id) {
+        if (id == null || userService.getById(id).isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        userService.deleteUser(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

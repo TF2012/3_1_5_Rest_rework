@@ -1,6 +1,5 @@
 package ru.kata.spring.boot_security.demo.service;
 
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,12 +7,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,43 +24,25 @@ public class UserService implements UserDetailsService {
         this.encoder = encoder;
     }
 
-
     @Override
-    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user_from_DB = repository.getUserByUsername(username).get();
-        return new org.springframework.security.core.userdetails.User(
-                user_from_DB.getUsername(),
-                user_from_DB.getPassword(),
-                mapRolesToAuthorities(user_from_DB.getRoles()));
+        User user = repository.findUserByUsername(username).orElseThrow(
+                () -> new UsernameNotFoundException("The user with this username not found"));
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
+                user.getRoles().stream().map(
+                        role -> new SimpleGrantedAuthority(role.getRoleName())).collect(Collectors.toList()));
     }
 
-    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles) {
-        return roles.stream().map(r -> new SimpleGrantedAuthority(r.getRole())).collect(Collectors.toList());
-    }
-
-    public List<User> findAll() {
+    public List<User> getUsers() {
         return repository.findAll();
     }
 
-    public User getUserByUsername(String name) {
-        if (repository.getUserByUsername(name).isEmpty()) {
-            throw new UsernameNotFoundException("not found user name");
-        }
-        return repository.getUserByUsername(name).get();
+    public Optional<User> getUserByUsername(String username) {
+        return repository.findUserByUsername(username);
     }
 
-    public User getUserById(Long id) {
-        if (repository.findById(id).isEmpty()) {
-            throw new UsernameNotFoundException("not found user id");
-        }
-        return repository.findById(id).get();
-    }
-
-    @Transactional
-    public void editUser(User user) {
-        user.setPassword(encoder.encode(user.getPassword()));
-        repository.save(user);
+    public Optional<User> getById(Long id) {
+        return repository.findById(id);
     }
 
     @Transactional
@@ -72,13 +52,20 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public boolean deleteUserById(Long id) {
-        if (repository.findById(id).isPresent()) {
-            repository.deleteById(id);
-            return true;
+    public void updateUser(Long id, User newUser) {
+        Optional<User> user = repository.findById(id);
+        if (user.isPresent()) {
+            user.get().setUsername(newUser.getUsername());
+            user.get().setPassword(encoder.encode(newUser.getPassword()));
+            user.get().setEmail(newUser.getEmail());
+            user.get().setRoles(newUser.getRoles());
+            repository.save(user.get());
         }
-        return false;
     }
 
-
+    @Transactional
+    public void deleteUser(Long id) {
+        Optional<User> user = repository.findById(id);
+        user.ifPresent(repository::delete);
+    }
 }

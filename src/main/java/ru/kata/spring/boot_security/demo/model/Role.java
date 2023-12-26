@@ -1,58 +1,33 @@
 package ru.kata.spring.boot_security.demo.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import org.springframework.security.core.GrantedAuthority;
-
-import java.util.Set;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "roles")
-public class Role implements GrantedAuthority {
-
+public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String role;
-    @JsonIgnore
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
+    private long id;
+    @Column(name = "name", unique = true)
+    private String roleName;
 
-    public Role() {}
+    public Role() {
 
-    public Role(String role) { this.role = role; }
+    }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public String getRole() {
-        return role;
+    public String getRoleName() {
+        return roleName;
     }
 
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
-    }
-
-    @Override
-    public String getAuthority() {
-        return getRole();
-    }
-
-    @Override
-    public String toString() {
-        return role.replace("ROLE_", "");
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 }
