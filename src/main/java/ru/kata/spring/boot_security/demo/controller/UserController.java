@@ -13,16 +13,16 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/user")
-public class UserRestController {
-    private final UserService service;
+public class UserController {
+    private final UserService userService;
 
-    public UserRestController(UserService service) {
-        this.service = service;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/getCurrentUser")
     public ResponseEntity<User> getCurrentUser(Principal principal) {
-        Optional<User> user = service.getUserByUsername(principal.getName());
-        return new ResponseEntity<>(user.orElse(null), HttpStatus.OK);
+        Optional<User> currentUser = userService.getByUsername(principal.getName());
+        return new ResponseEntity<>(currentUser.orElse(null), HttpStatus.OK);
     }
 }
